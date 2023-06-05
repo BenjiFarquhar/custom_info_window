@@ -9,7 +9,7 @@ import 'package:universal_io/io.dart';
 /// Controller to add, update and control the custom info window.
 class CustomInfoWindowController {
   /// Add custom [Widget] and [Marker]'s [LatLng] to [CustomInfoWindow] and make it visible.
-  Function(Widget, LatLng)? addInfoWindow;
+  Function(Widget, LatLng, {double? offset})? addInfoWindow;
 
   /// Notifies [CustomInfoWindow] to redraw as per change in position.
   VoidCallback? onCameraMove;
@@ -72,10 +72,12 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   double _topMargin = 0;
   Widget? _child;
   LatLng? _latLng;
+  late double _offset;
 
   @override
   void initState() {
     super.initState();
+    _offset = widget.offset;
     widget.controller.addInfoWindow = _addInfoWindow;
     widget.controller.onCameraMove = _onCameraMove;
     widget.controller.hideInfoWindow = _hideInfoWindow;
@@ -83,7 +85,7 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   }
 
   /// Calculate the position on [CustomInfoWindow] and redraw on screen.
-  void _updateInfoWindow() async {
+  void _updateInfoWindow({double? offset}) async {
     if (_latLng == null ||
         _child == null ||
         widget.controller.googleMapController == null) {
@@ -97,8 +99,11 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
     double left =
         (screenCoordinate.x.toDouble() / devicePixelRatio) - (widget.width / 2);
     double top = (screenCoordinate.y.toDouble() / devicePixelRatio) -
-        (widget.offset + widget.height);
+        ((offset ?? _offset) + widget.height);
     setState(() {
+      if (offset != null) {
+        _offset = offset;
+      }
       _showNow = true;
       _leftMargin = left;
       _topMargin = top;
@@ -107,12 +112,12 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   }
 
   /// Assign the [Widget] and [Marker]'s [LatLng].
-  void _addInfoWindow(Widget child, LatLng latLng) {
+  void _addInfoWindow(Widget child, LatLng latLng, {double? offset}) {
     assert(child != null);
     assert(latLng != null);
     _child = child;
     _latLng = latLng;
-    _updateInfoWindow();
+    _updateInfoWindow(offset: offset);
   }
 
   /// Notifies camera movements on [GoogleMap].
