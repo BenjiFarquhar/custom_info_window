@@ -1,10 +1,10 @@
 /// A widget based custom info window for google_maps_flutter package.
 library custom_info_window;
 
-import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:universal_io/io.dart';
 
 /// Controller to add, update and control the custom info window.
 class CustomInfoWindowController {
