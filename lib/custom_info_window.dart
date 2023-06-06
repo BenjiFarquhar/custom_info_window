@@ -12,7 +12,7 @@ class CustomInfoWindowController {
   Function(Widget, LatLng, {double? offset})? addInfoWindow;
 
   /// Notifies [CustomInfoWindow] to redraw as per change in position.
-  VoidCallback? onCameraMove;
+  Function({double? offset})? onCameraMove;
 
   /// Hides [CustomInfoWindow].
   VoidCallback? hideInfoWindow;
@@ -50,6 +50,7 @@ class CustomInfoWindow extends StatefulWidget {
 
   const CustomInfoWindow(
     this.onChange, {
+    Key? key,
     required this.controller,
     this.offset = 50,
     this.height = 50,
@@ -60,7 +61,8 @@ class CustomInfoWindow extends StatefulWidget {
         assert(height != null),
         assert(height >= 0),
         assert(width != null),
-        assert(width >= 0);
+        assert(width >= 0),
+        super(key: key);
 
   @override
   _CustomInfoWindowState createState() => _CustomInfoWindowState();
@@ -82,6 +84,17 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
     widget.controller.onCameraMove = _onCameraMove;
     widget.controller.hideInfoWindow = _hideInfoWindow;
     widget.controller.showInfoWindow = _showInfoWindow;
+  }
+
+  @override
+  didUpdateWidget(CustomInfoWindow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.offset != widget.offset) {
+      setState(() {
+        _offset = widget.offset;
+      });
+      _updateInfoWindow(offset: widget.offset);
+    }
   }
 
   /// Calculate the position on [CustomInfoWindow] and redraw on screen.
@@ -121,9 +134,9 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   }
 
   /// Notifies camera movements on [GoogleMap].
-  void _onCameraMove() {
+  void _onCameraMove({double? offset}) {
     if (!_showNow) return;
-    _updateInfoWindow();
+    _updateInfoWindow(offset: offset);
   }
 
   /// Disables [CustomInfoWindow] visibility.
