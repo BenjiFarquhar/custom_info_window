@@ -9,10 +9,10 @@ import 'package:universal_io/io.dart';
 /// Controller to add, update and control the custom info window.
 class CustomInfoWindowController {
   /// Add custom [Widget] and [Marker]'s [LatLng] to [CustomInfoWindow] and make it visible.
-  Function(Widget, LatLng, {double? offset})? addInfoWindow;
+  Function(Widget, LatLng,)? addInfoWindow;
 
   /// Notifies [CustomInfoWindow] to redraw as per change in position.
-  Function({double? offset})? onCameraMove;
+  Function()? onCameraMove;
 
   /// Hides [CustomInfoWindow].
   VoidCallback? hideInfoWindow;
@@ -55,12 +55,8 @@ class CustomInfoWindow extends StatefulWidget {
     this.offset = 50,
     this.height = 50,
     this.width = 100,
-  })  : assert(controller != null),
-        assert(offset != null),
-        assert(offset >= 0),
-        assert(height != null),
+  })  : assert(offset >= 0),
         assert(height >= 0),
-        assert(width != null),
         assert(width >= 0),
         super(key: key);
 
@@ -93,12 +89,12 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
       setState(() {
         _offset = widget.offset;
       });
-      _updateInfoWindow(offset: widget.offset);
+      _updateInfoWindow();
     }
   }
 
   /// Calculate the position on [CustomInfoWindow] and redraw on screen.
-  void _updateInfoWindow({double? offset}) async {
+  void _updateInfoWindow() async {
     if (_latLng == null ||
         _child == null ||
         widget.controller.googleMapController == null) {
@@ -112,11 +108,8 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
     double left =
         (screenCoordinate.x.toDouble() / devicePixelRatio) - (widget.width / 2);
     double top = (screenCoordinate.y.toDouble() / devicePixelRatio) -
-        ((offset ?? _offset) + widget.height);
+        (_offset + widget.height);
     setState(() {
-      if (offset != null) {
-        _offset = offset;
-      }
       _showNow = true;
       _leftMargin = left;
       _topMargin = top;
@@ -125,18 +118,16 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
   }
 
   /// Assign the [Widget] and [Marker]'s [LatLng].
-  void _addInfoWindow(Widget child, LatLng latLng, {double? offset}) {
-    assert(child != null);
-    assert(latLng != null);
+  void _addInfoWindow(Widget child, LatLng latLng,) {
     _child = child;
     _latLng = latLng;
-    _updateInfoWindow(offset: offset);
+    _updateInfoWindow();
   }
 
   /// Notifies camera movements on [GoogleMap].
-  void _onCameraMove({double? offset}) {
+  void _onCameraMove() {
     if (!_showNow) return;
-    _updateInfoWindow(offset: offset);
+    _updateInfoWindow();
   }
 
   /// Disables [CustomInfoWindow] visibility.
