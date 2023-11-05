@@ -9,7 +9,10 @@ import 'package:universal_io/io.dart';
 /// Controller to add, update and control the custom info window.
 class CustomInfoWindowController {
   /// Add custom [Widget] and [Marker]'s [LatLng] to [CustomInfoWindow] and make it visible.
-  Function(Widget, LatLng,)? addInfoWindow;
+  Function(
+    Widget,
+    LatLng,
+  )? addInfoWindow;
 
   /// Notifies [CustomInfoWindow] to redraw as per change in position.
   Function()? onCameraMove;
@@ -95,32 +98,41 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
 
   /// Calculate the position on [CustomInfoWindow] and redraw on screen.
   void _updateInfoWindow() async {
-    if (_latLng == null ||
-        _child == null ||
-        widget.controller.googleMapController == null) {
-      return;
+    if (_showNow) {
+      if (_latLng == null ||
+          _child == null ||
+          widget.controller.googleMapController == null) {
+        return;
+      }
+      ScreenCoordinate screenCoordinate = await widget
+          .controller.googleMapController!
+          .getScreenCoordinate(_latLng!);
+      double devicePixelRatio =
+          Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
+      double left = (screenCoordinate.x.toDouble() / devicePixelRatio) -
+          (widget.width / 2);
+      double top = (screenCoordinate.y.toDouble() / devicePixelRatio) -
+          (_offset + widget.height);
+      setState(() {
+        _showNow = true;
+        _leftMargin = left;
+        _topMargin = top;
+      });
+
+      widget.onChange.call(top, left, widget.width, widget.height);
     }
-    ScreenCoordinate screenCoordinate = await widget
-        .controller.googleMapController!
-        .getScreenCoordinate(_latLng!);
-    double devicePixelRatio =
-        Platform.isAndroid ? MediaQuery.of(context).devicePixelRatio : 1.0;
-    double left =
-        (screenCoordinate.x.toDouble() / devicePixelRatio) - (widget.width / 2);
-    double top = (screenCoordinate.y.toDouble() / devicePixelRatio) -
-        (_offset + widget.height);
-    setState(() {
-      _showNow = true;
-      _leftMargin = left;
-      _topMargin = top;
-    });
-    widget.onChange.call(top, left, widget.width, widget.height);
   }
 
   /// Assign the [Widget] and [Marker]'s [LatLng].
-  void _addInfoWindow(Widget child, LatLng latLng,) {
+  void _addInfoWindow(
+    Widget child,
+    LatLng latLng,
+  ) {
     _child = child;
     _latLng = latLng;
+    setState(() {
+      _showNow = true;
+    });
     _updateInfoWindow();
   }
 
@@ -139,6 +151,9 @@ class _CustomInfoWindowState extends State<CustomInfoWindow> {
 
   /// Enables [CustomInfoWindow] visibility.
   void _showInfoWindow() {
+    setState(() {
+      _showNow = true;
+    });
     _updateInfoWindow();
   }
 
